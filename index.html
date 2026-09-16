@@ -103,17 +103,6 @@
     </button>
   </div>
 
-  <!-- Quick Action: Task Submission Modal Floating Trigger -->
-  <div class="fixed bottom-4 right-4 z-50">
-    <button onclick="openTaskModal()" class="group relative flex items-center space-x-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-full shadow-lg shadow-blue-500/25 border border-blue-400/40 transition-all duration-300 hover:scale-105 active:scale-95">
-      <span class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-xs font-bold shadow-sm">
-        🪙
-      </span>
-      <span class="font-space text-sm">Build in 3D Task</span>
-      <span class="text-xs bg-amber-300/20 text-amber-300 font-mono px-2 py-0.5 rounded-full border border-amber-400/30 font-semibold">+100 pts</span>
-    </button>
-  </div>
-
   <!-- NAVIGATION BAR -->
   <header id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-obsidian/60 backdrop-blur-md border-b border-cyan-500/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -151,10 +140,6 @@
           <span>Prizes & Stats</span>
           <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
         </a>
-        <a href="#submission" class="hover:text-cyber-cyan transition-colors relative py-1 group">
-          <span>Task Submission</span>
-          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
-        </a>
       </nav>
 
       <!-- Right Nav CTAs -->
@@ -178,8 +163,7 @@
       <a href="#about" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">About Fest</a>
       <a href="#tracks" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Competition Tracks</a>
       <a href="#schedule" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Timeline & Schedule</a>
-      <a href="#prizes" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Prize Pool & Stats</a>
-      <a href="#submission" class="block py-2 text-slate-200 hover:text-cyber-cyan">Task Submission (100 pts)</a>
+      <a href="#prizes" class="block py-2 text-slate-200 hover:text-cyber-cyan">Prize Pool & Stats</a>
     </div>
   </header>
 
@@ -217,10 +201,6 @@
 
         <button onclick="openRegistrationModal()" class="px-8 py-4 rounded-xl glass-panel text-white font-space font-bold text-sm tracking-wider uppercase border border-white/20 hover:border-cyber-purple hover:bg-cyber-purple/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
           <i class="fa-solid fa-id-card-clip text-cyber-purple"></i> Register for Hackathon
-        </button>
-
-        <button onclick="openTaskModal()" class="px-6 py-4 rounded-xl bg-blue-950/80 border border-blue-500/40 text-blue-300 font-space font-semibold text-sm hover:bg-blue-900/80 hover:text-white transition-all flex items-center gap-2">
-          <span>🪙</span> Submit 3D Task
         </button>
       </div>
 
@@ -610,80 +590,6 @@
     </section>
 
 
-    <!-- TASK SUBMISSION & SCREENSHOT RECREATION SECTION -->
-    <section id="submission" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto flex flex-col justify-center">
-      
-      <!-- Section Header -->
-      <div class="text-center max-w-2xl mx-auto mb-10">
-        <div class="inline-flex items-center space-x-2 font-mono text-xs text-amber-400 tracking-widest uppercase bg-amber-400/10 px-3 py-1 rounded-md border border-amber-400/30 mb-4">
-          <span>🪙</span> <span>Interactive Challenge Protocol</span>
-        </div>
-        <h2 class="font-syne text-3xl sm:text-5xl font-extrabold text-white mb-3">Build in 3D Portal</h2>
-        <p class="font-space text-slate-300 text-sm font-light">Submit your 3D interactive web project to earn your badge and claim 100 verification coins.</p>
-      </div>
-
-      <!-- Card container matching the clean popout design from user screenshot -->
-      <div class="bg-white text-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg mx-auto w-full relative">
-        
-        <!-- Top bar with Badge & Coins -->
-        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-          <h3 class="font-space font-extrabold text-2xl text-slate-900">Build in 3D</h3>
-          <div class="flex items-center space-x-3">
-            <div class="flex items-center space-x-1 px-3 py-1 bg-amber-100/80 rounded-full font-bold text-sm text-amber-800">
-              <span>100</span> <span>🪙</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Description Paragraph -->
-        <p class="text-slate-600 text-sm leading-relaxed mb-6 font-normal">
-          Design and develop a 3D interactive website for Techfest. Think 3D scroll animations, interactive objects and dynamic transitions. You have full creative freedom on the concept and visuals. <span class="text-slate-700 font-medium">*Submit either a screen recording of the working website (Drive link with viewer access) or the GitHub link to your project.</span>
-        </p>
-
-        <!-- Form -->
-        <form id="submission-inline-form" onsubmit="handleTaskSubmit(event)" class="space-y-5">
-          <div>
-            <label class="block text-sm font-bold text-slate-900 mb-1.5">
-              Submission URL <span class="text-rose-500">*</span>
-            </label>
-            <input 
-              type="url" 
-              id="submission-url-input" 
-              required 
-              placeholder="https://drive.google.com/..." 
-              class="w-full px-4 py-3 rounded-xl border border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none text-slate-800 text-sm font-space placeholder-slate-400"
-            />
-          </div>
-
-          <div class="flex items-center gap-3 pt-2">
-            <button 
-              type="button" 
-              onclick="document.getElementById('submission-url-input').value=''"
-              class="w-1/2 py-3.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-space font-semibold text-sm hover:bg-slate-50 transition-colors"
-            >
-              Cancel
-            </button>
-            
-            <button 
-              type="submit" 
-              id="submit-task-btn"
-              class="w-1/2 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-space font-semibold text-sm shadow-md shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Submit Task
-            </button>
-          </div>
-        </form>
-
-        <!-- Success notification box -->
-        <div id="submission-success-msg" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-space flex items-center space-x-2">
-          <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-          <span><strong>Task Submitted!</strong> 100 🪙 awarded to your hacker pass. Status: Under Review.</span>
-        </div>
-
-      </div>
-
-    </section>
-
   </main>
 
 
@@ -726,7 +632,6 @@
           <div><a href="#tracks" class="text-slate-400 hover:text-cyber-cyan transition-colors">Competition Tracks</a></div>
           <div><a href="#schedule" class="text-slate-400 hover:text-cyber-cyan transition-colors">Timeline & Keynotes</a></div>
           <div><a href="#prizes" class="text-slate-400 hover:text-cyber-cyan transition-colors">Prizes & Bounties</a></div>
-          <div><a href="#submission" class="text-slate-400 hover:text-cyber-cyan transition-colors">Task Portal (100 pts)</a></div>
         </div>
 
         <!-- Col 3: Terminal Status Box -->
@@ -762,62 +667,7 @@
   </footer>
 
 
-  <!-- TASK SUBMISSION POPUP MODAL (Exact match for prompt screenshot) -->
-  <div id="task-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full transform scale-95 transition-transform duration-300 relative" id="task-modal-box">
-      
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-        <h3 class="font-space font-extrabold text-2xl text-slate-900">Build in 3D</h3>
-        <div class="flex items-center space-x-2">
-          <div class="flex items-center space-x-1 px-3 py-1 bg-amber-100/90 rounded-full font-bold text-sm text-amber-800">
-            <span>100</span> <span>🪙</span>
-          </div>
-          <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors">
-            <i class="fa-solid fa-xmark text-sm"></i>
-          </button>
-        </div>
-      </div>
 
-      <!-- Description -->
-      <p class="text-slate-600 text-sm leading-relaxed mb-6 font-normal">
-        Design and develop a 3D interactive website for Techfest. Think 3D scroll animations, interactive objects and dynamic transitions. You have full creative freedom on the concept and visuals. <span class="text-slate-700 font-medium">*Submit either a screen recording of the working website (Drive link with viewer access) or the GitHub link to your project.</span>
-      </p>
-
-      <!-- Form -->
-      <form onsubmit="handleTaskSubmit(event, true)" class="space-y-5">
-        <div>
-          <label class="block text-sm font-bold text-slate-900 mb-1.5">
-            Submission URL <span class="text-rose-500">*</span>
-          </label>
-          <input 
-            type="url" 
-            id="modal-submission-url-input" 
-            required 
-            placeholder="https://drive.google.com/..." 
-            class="w-full px-4 py-3 rounded-xl border border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none text-slate-800 text-sm font-space placeholder-slate-400"
-          />
-        </div>
-
-        <div class="flex items-center gap-3 pt-2">
-          <button 
-            type="button" 
-            onclick="closeTaskModal()" 
-            class="w-1/2 py-3.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-space font-semibold text-sm hover:bg-slate-50 transition-colors"
-          >
-            Cancel
-          </button>
-          
-          <button 
-            type="submit" 
-            class="w-1/2 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-space font-semibold text-sm shadow-md shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Submit Task
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
 
   <!-- FULL REGISTRATION MODAL -->

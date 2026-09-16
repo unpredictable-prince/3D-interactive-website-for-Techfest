@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 > **"Where Silicon Meets Synapse."**  
-> A high-performance, production-ready 3D interactive web application for an annual collegiate technology festival. Featuring procedural WebGL geometry, multi-layer ambient particle systems, GSAP ScrollTrigger camera choreography, perspective 3D tilt cards, synthesized Web Audio SFX, and complete interactive registration & submission portals.
+> A high-performance, production-ready 3D interactive web application for an annual collegiate technology festival. Featuring procedural WebGL geometry, multi-layer ambient particle systems, GSAP ScrollTrigger camera choreography, perspective 3D tilt cards, synthesized Web Audio SFX, and complete interactive registration portal with dynamic hacker pass generation.
 
 ---
 
@@ -28,8 +28,7 @@
    - **Schedule & Prize Pool:** Top-down perspective orbit with accelerating particle flow.
 
 4. **Interactive UI & Feature Modals:**
-   - **"Build in 3D" Submission Portal:** High-fidelity challenge task modal with `100 🪙` token badge, validation, and confetti celebration.
-   - **Hacker Registration Portal:** Multi-field validation, track picker, and dynamic digital **Hacker Pass Generation**.
+   - **Hacker Registration Portal:** Multi-field validation, track picker, digital **Hacker Pass Generation**, and confetti celebration.
    - **3D Perspective Tilt Cards:** Real-time mouse coordinate physics on hover across all 4 competition tracks.
    - **Schedule Timeline Switcher:** Dynamic Day 01, 02, and 03 agenda switcher.
    - **Synthesized Web Audio Engine:** Pure Web Audio API futuristic sound feedback (no external asset dependencies).

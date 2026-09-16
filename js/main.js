@@ -608,31 +608,7 @@ if (typeof ScrollTrigger !== 'undefined') {
 }
 
 
-// 5. TASK SUBMISSION MODAL
-const taskModal = document.getElementById('task-modal');
-const taskModalBox = document.getElementById('task-modal-box');
-
-function openTaskModal() {
-  playWarpSound();
-  if (taskModal && taskModalBox) {
-    taskModal.classList.remove('hidden');
-    setTimeout(() => {
-      taskModal.classList.remove('opacity-0');
-      taskModalBox.classList.remove('scale-95');
-    }, 10);
-  }
-}
-
-function closeTaskModal() {
-  if (taskModal && taskModalBox) {
-    taskModal.classList.add('opacity-0');
-    taskModalBox.classList.add('scale-95');
-    setTimeout(() => {
-      taskModal.classList.add('hidden');
-    }, 300);
-  }
-}
-
+// 5. REGISTRATION MODAL & CELEBRATION
 function triggerConfettiCelebration() {
   if (typeof confetti === 'function') {
     confetti({
@@ -644,34 +620,6 @@ function triggerConfettiCelebration() {
   }
 }
 
-function handleTaskSubmit(e, isModal = false) {
-  e.preventDefault();
-  const input = isModal 
-    ? document.getElementById('modal-submission-url-input') 
-    : document.getElementById('submission-url-input');
-  
-  if (!input) return;
-  const url = input.value;
-  if (!url) return;
-
-  playCyberChime();
-  triggerConfettiCelebration();
-
-  if (isModal) {
-    closeTaskModal();
-  }
-
-  const successMsg = document.getElementById('submission-success-msg');
-  if (successMsg) {
-    successMsg.classList.remove('hidden');
-    successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
-  localStorage.setItem('techfest_3d_task_url', url);
-}
-
-
-// 6. REGISTRATION MODAL
 const regModal = document.getElementById('registration-modal');
 const regModalBox = document.getElementById('registration-modal-box');
 const regTrackSelect = document.getElementById('reg-track-select');
@@ -718,7 +666,7 @@ function handleRegistrationSubmit(e) {
 }
 
 
-// 7. Mobile Menu Toggle
+// 6. Mobile Menu Toggle
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
 
@@ -735,11 +683,6 @@ if (mobileMenuBtn && mobileMenu) {
 }
 
 // Close modals on clicking backdrop
-if (taskModal) {
-  taskModal.addEventListener('click', (e) => {
-    if (e.target === taskModal) closeTaskModal();
-  });
-}
 if (regModal) {
   regModal.addEventListener('click', (e) => {
     if (e.target === regModal) closeRegistrationModal();
@@ -747,9 +690,6 @@ if (regModal) {
 }
 
 // Global exposure for inline HTML event handlers
-window.openTaskModal = openTaskModal;
-window.closeTaskModal = closeTaskModal;
-window.handleTaskSubmit = handleTaskSubmit;
 window.openRegistrationModal = openRegistrationModal;
 window.closeRegistrationModal = closeRegistrationModal;
 window.handleRegistrationSubmit = handleRegistrationSubmit;
