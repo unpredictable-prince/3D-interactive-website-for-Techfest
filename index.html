@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECHFEST 2026 // The Cyber-Physical Era</title>
+  <meta name="description" content="Annual Collegiate Technology Festival: TECHFEST 2026. Explore 3D interactive worlds, robotics, agentic AI, Web3, and hackathons with over $50,000 in prizes." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,800;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            space: ['"Space Grotesk"', 'sans-serif'],
+            syne: ['Syne', 'sans-serif']
+          },
+          colors: {
+            obsidian: '#05070f',
+            'obsidian-light': '#0a0f1d',
+            'cyber-cyan': '#00f0ff',
+            'cyber-purple': '#b026ff',
+            'cyber-magenta': '#ff007f',
+            'cyber-blue': '#0070f3',
+            'cyber-yellow': '#ffd700',
+            'cyber-green': '#00ff88',
+          },
+          boxShadow: {
+            'neon-cyan': '0 0 25px rgba(0, 240, 255, 0.45)',
+            'neon-purple': '0 0 25px rgba(176, 38, 255, 0.45)',
+            'neon-magenta': '0 0 25px rgba(255, 0, 127, 0.45)',
+            'cyber-card': '0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08)',
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 3s infinite ease-in-out',
+            'float-slow': 'floatSlow 6s infinite ease-in-out',
+            'glitch': 'glitch 4s infinite',
+            'spin-slow': 'spin 20s linear infinite',
+            'border-flow': 'borderFlow 4s linear infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+              '50%': { opacity: '0.8', transform: 'scale(1.03)' },
+            },
+            floatSlow: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            borderFlow: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+              '100%': { backgroundPosition: '0% 50%' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Modular Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Three.js & GSAP CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+
+<body class="bg-obsidian text-slate-100 font-outfit overflow-x-hidden selection:bg-cyber-cyan selection:text-obsidian relative">
+
+  <!-- Scanlines & Ambient Grid Overlay -->
+  <div class="fixed inset-0 scanlines z-40 pointer-events-none opacity-40"></div>
+  <div class="fixed inset-0 cyber-grid z-0 pointer-events-none opacity-30"></div>
+
+  <!-- 3D WebGL Canvas Layer (Fixed full-screen behind UI) -->
+  <canvas id="webgl-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+  <!-- Ambient Audio / HUD Status Bar -->
+  <div id="hud-bar" class="fixed bottom-4 left-4 z-50 flex items-center space-x-3 bg-obsidian-light/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-cyber-cyan/20 text-xs font-mono">
+    <span class="flex h-2 w-2 relative">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-green opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2 w-2 bg-cyber-green"></span>
+    </span>
+    <span class="text-slate-300">CORE MATRIX: <span class="text-cyber-cyan">ONLINE</span></span>
+    <span class="text-slate-600">|</span>
+    <button id="audio-toggle-btn" class="text-slate-400 hover:text-cyber-cyan flex items-center space-x-1.5 transition-colors" title="Toggle Synthesized Audio Feedback">
+      <i class="fa-solid fa-volume-xmark text-cyber-magenta" id="audio-icon"></i>
+      <span id="audio-label">SFX: OFF</span>
+    </button>
+  </div>
+
+  <!-- Quick Action: Task Submission Modal Floating Trigger -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <button onclick="openTaskModal()" class="group relative flex items-center space-x-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-full shadow-lg shadow-blue-500/25 border border-blue-400/40 transition-all duration-300 hover:scale-105 active:scale-95">
+      <span class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-xs font-bold shadow-sm">
+        🪙
+      </span>
+      <span class="font-space text-sm">Build in 3D Task</span>
+      <span class="text-xs bg-amber-300/20 text-amber-300 font-mono px-2 py-0.5 rounded-full border border-amber-400/30 font-semibold">+100 pts</span>
+    </button>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <header id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-obsidian/60 backdrop-blur-md border-b border-cyan-500/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#hero" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan via-cyber-blue to-cyber-purple p-[1.5px] flex items-center justify-center shadow-neon-cyan/40">
+          <div class="w-full h-full bg-obsidian rounded-[10px] flex items-center justify-center group-hover:bg-transparent transition-colors duration-300">
+            <i class="fa-solid fa-cube text-cyber-cyan group-hover:text-obsidian transition-colors text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div class="font-syne font-extrabold text-xl tracking-wider text-white flex items-center gap-1.5">
+            TECHFEST <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan">2026</span>
+          </div>
+          <p class="text-[10px] font-mono text-slate-400 tracking-widest uppercase">The Cyber-Physical Era</p>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-space font-medium text-slate-300">
+        <a href="#about" class="hover:text-cyber-cyan transition-colors relative py-1 group">
+          <span>About</span>
+          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
+        </a>
+        <a href="#tracks" class="hover:text-cyber-cyan transition-colors relative py-1 group">
+          <span>Tracks</span>
+          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
+        </a>
+        <a href="#schedule" class="hover:text-cyber-cyan transition-colors relative py-1 group">
+          <span>Schedule</span>
+          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
+        </a>
+        <a href="#prizes" class="hover:text-cyber-cyan transition-colors relative py-1 group">
+          <span>Prizes & Stats</span>
+          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
+        </a>
+        <a href="#submission" class="hover:text-cyber-cyan transition-colors relative py-1 group">
+          <span>Task Submission</span>
+          <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyber-cyan group-hover:w-full transition-all duration-300"></span>
+        </a>
+      </nav>
+
+      <!-- Right Nav CTAs -->
+      <div class="flex items-center space-x-3">
+        <button onclick="openRegistrationModal()" class="relative group overflow-hidden rounded-xl p-[1px] font-space font-semibold text-xs tracking-wider uppercase transition-transform duration-300 hover:scale-105 active:scale-95">
+          <span class="absolute inset-0 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta animate-spin-slow"></span>
+          <span class="relative block px-5 py-2.5 rounded-[11px] bg-obsidian text-white group-hover:bg-transparent group-hover:text-white transition-all duration-300">
+            <i class="fa-solid fa-bolt text-cyber-cyan mr-1.5 group-hover:text-white"></i> Register Now
+          </span>
+        </button>
+
+        <!-- Mobile Menu Hamburger -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-300 hover:text-white focus:outline-none">
+          <i class="fa-solid fa-bars-staggered text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-6 bg-obsidian-light/95 backdrop-blur-xl border-b border-cyber-cyan/20 font-space space-y-3">
+      <a href="#about" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">About Fest</a>
+      <a href="#tracks" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Competition Tracks</a>
+      <a href="#schedule" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Timeline & Schedule</a>
+      <a href="#prizes" class="block py-2 text-slate-200 hover:text-cyber-cyan border-b border-white/5">Prize Pool & Stats</a>
+      <a href="#submission" class="block py-2 text-slate-200 hover:text-cyber-cyan">Task Submission (100 pts)</a>
+    </div>
+  </header>
+
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="relative z-10">
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative">
+      
+      <!-- Top Cyber Pill Badge -->
+      <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono text-xs mb-8 tracking-wider shadow-neon-cyan/20 animate-pulse-glow">
+        <span class="w-2 h-2 rounded-full bg-cyber-cyan"></span>
+        <span>ANNUAL INTERNATIONAL TECH CONCLAVE • MARCH 27–29, 2026</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="font-syne font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] max-w-5xl mb-6">
+        <span class="text-white drop-shadow-md">TECHFEST</span><br />
+        <span class="glitch-text text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta" data-text="CYBER-PHYSICAL ERA">
+          CYBER-PHYSICAL ERA
+        </span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="font-space text-slate-300 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+        Where Silicon Meets Synapse. Step into an interactive multi-dimensional universe of autonomous swarms, agentic AI, spatial web, and cybernetic architectures.
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4 mb-14">
+        <a href="#tracks" class="px-8 py-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-obsidian font-space font-bold text-sm tracking-wider uppercase shadow-neon-cyan hover:shadow-cyan-400/60 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
+          <i class="fa-solid fa-microchip"></i> Explore 40+ Tracks
+        </a>
+
+        <button onclick="openRegistrationModal()" class="px-8 py-4 rounded-xl glass-panel text-white font-space font-bold text-sm tracking-wider uppercase border border-white/20 hover:border-cyber-purple hover:bg-cyber-purple/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
+          <i class="fa-solid fa-id-card-clip text-cyber-purple"></i> Register for Hackathon
+        </button>
+
+        <button onclick="openTaskModal()" class="px-6 py-4 rounded-xl bg-blue-950/80 border border-blue-500/40 text-blue-300 font-space font-semibold text-sm hover:bg-blue-900/80 hover:text-white transition-all flex items-center gap-2">
+          <span>🪙</span> Submit 3D Task
+        </button>
+      </div>
+
+      <!-- Live Countdown Bar -->
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl max-w-3xl w-full border border-white/10 shadow-2xl">
+        <div class="text-xs font-mono uppercase tracking-widest text-slate-400 mb-3 flex items-center justify-between">
+          <span class="flex items-center gap-2"><i class="fa-regular fa-clock text-cyber-cyan"></i> HACKATHON GENESIS COUNTDOWN</span>
+          <span class="text-cyber-green">VENUE: METROPOLIS ARENA & VIRTUAL METAVERSE</span>
+        </div>
+        <div class="grid grid-cols-4 gap-2 sm:gap-4 text-center">
+          <div class="p-3 bg-obsidian/60 rounded-xl border border-white/5">
+            <span id="countdown-days" class="font-syne text-2xl sm:text-4xl font-bold text-white block">12</span>
+            <span class="text-[10px] sm:text-xs font-mono text-slate-400 uppercase">Days</span>
+          </div>
+          <div class="p-3 bg-obsidian/60 rounded-xl border border-white/5">
+            <span id="countdown-hours" class="font-syne text-2xl sm:text-4xl font-bold text-cyber-cyan block">18</span>
+            <span class="text-[10px] sm:text-xs font-mono text-slate-400 uppercase">Hours</span>
+          </div>
+          <div class="p-3 bg-obsidian/60 rounded-xl border border-white/5">
+            <span id="countdown-mins" class="font-syne text-2xl sm:text-4xl font-bold text-cyber-purple block">44</span>
+            <span class="text-[10px] sm:text-xs font-mono text-slate-400 uppercase">Minutes</span>
+          </div>
+          <div class="p-3 bg-obsidian/60 rounded-xl border border-white/5">
+            <span id="countdown-secs" class="font-syne text-2xl sm:text-4xl font-bold text-cyber-magenta block">29</span>
+            <span class="text-[10px] sm:text-xs font-mono text-slate-400 uppercase">Seconds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Down Indicator -->
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+        <span class="text-[10px] font-mono tracking-widest text-cyber-cyan uppercase mb-1">Scroll to Explore 3D Matrix</span>
+        <i class="fa-solid fa-chevron-down text-cyber-cyan text-sm animate-bounce"></i>
+      </div>
+    </section>
+
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Text Info -->
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 font-mono text-xs text-cyber-purple tracking-widest uppercase bg-cyber-purple/10 px-3 py-1 rounded-md border border-cyber-purple/30">
+            <i class="fa-solid fa-network-wired"></i> <span>System Architecture</span>
+          </div>
+          
+          <h2 class="font-syne text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+            Bridging Physical Reality with <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-purple">Synthetic Intelligence</span>
+          </h2>
+          
+          <p class="font-space text-slate-300 text-base sm:text-lg leading-relaxed font-light">
+            TECHFEST 2026 is not just a hackathon—it is a planetary convergence of 5,000+ engineers, creators, researchers, and venture pioneers. Over 72 continuous hours, teams construct autonomous systems, deploy neural smart contracts, and forge immersive spatial technologies.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 pt-4">
+            <div class="glass-panel p-4 rounded-xl border border-white/10 hover:border-cyber-cyan/40 transition-colors">
+              <div class="text-cyber-cyan text-2xl font-syne font-bold mb-1">0.02ms</div>
+              <div class="text-xs font-mono text-slate-400">Quantum Neural Response Latency</div>
+            </div>
+            <div class="glass-panel p-4 rounded-xl border border-white/10 hover:border-cyber-purple/40 transition-colors">
+              <div class="text-cyber-purple text-2xl font-syne font-bold mb-1">100%</div>
+              <div class="text-xs font-mono text-slate-400">Open-Source Innovation & Grants</div>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <a href="#tracks" class="inline-flex items-center space-x-2 text-cyber-cyan font-space font-semibold text-sm hover:underline">
+              <span>View Technical Tracks & Problem Statements</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Holographic Feature Pillars -->
+        <div class="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <div class="glass-panel p-6 rounded-2xl border border-white/10 hover:border-cyber-cyan/50 transition-all duration-300 group hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 flex items-center justify-center text-cyber-cyan text-xl mb-4 group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <h3 class="font-syne font-bold text-lg text-white mb-2">Autonomous Swarms</h3>
+            <p class="text-xs font-space text-slate-400 leading-relaxed">
+              Cooperative micro-drone fleets, kinematic robotics, and ROS2 multi-agent pathfinding in synchronized spatial fields.
+            </p>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl border border-white/10 hover:border-cyber-purple/50 transition-all duration-300 group hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-cyber-purple/10 border border-cyber-purple/30 flex items-center justify-center text-cyber-purple text-xl mb-4 group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3 class="font-syne font-bold text-lg text-white mb-2">Neural Intelligence</h3>
+            <p class="text-xs font-space text-slate-400 leading-relaxed">
+              Multi-modal reasoning agents, edge-compute transformers, and autonomous code synthesis systems.
+            </p>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl border border-white/10 hover:border-cyber-magenta/50 transition-all duration-300 group hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-cyber-magenta/10 border border-cyber-magenta/30 flex items-center justify-center text-cyber-magenta text-xl mb-4 group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="font-syne font-bold text-lg text-white mb-2">Zero-Knowledge & Web3</h3>
+            <p class="text-xs font-space text-slate-400 leading-relaxed">
+              ZK-SNARK cryptographic proofs, decentralized consensus, and automated security audit vectors.
+            </p>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl border border-white/10 hover:border-cyber-yellow/50 transition-all duration-300 group hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-cyber-yellow/10 border border-cyber-yellow/30 flex items-center justify-center text-cyber-yellow text-xl mb-4 group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-vr-cardboard"></i>
+            </div>
+            <h3 class="font-syne font-bold text-lg text-white mb-2">Spatial Computing</h3>
+            <p class="text-xs font-space text-slate-400 leading-relaxed">
+              Interactive WebGL engines, volumetric rendering, and next-gen browser spatial computing interfaces.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- EVENT TRACKS SECTION (3D Tilt Cards) -->
+    <section id="tracks" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="inline-flex items-center space-x-2 font-mono text-xs text-cyber-cyan tracking-widest uppercase bg-cyber-cyan/10 px-3 py-1 rounded-md border border-cyber-cyan/30 mb-4">
+          <i class="fa-solid fa-layer-group"></i> <span>Competition Matrix</span>
+        </div>
+        <h2 class="font-syne text-3xl sm:text-5xl font-extrabold text-white mb-4">
+          Four Core <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta">Engineering Tracks</span>
+        </h2>
+        <p class="font-space text-slate-300 text-sm sm:text-base font-light">
+          Compete for over $50,000 in total cash prizes, venture capital incubation grants, and direct job opportunities at tier-1 tech firms.
+        </p>
+      </div>
+
+      <!-- 4 Interactive 3D Tilt Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- Track 1: Robotics & Automation -->
+        <div class="tilt-card glass-panel rounded-3xl p-6 border border-white/10 hover:border-cyber-cyan/80 relative overflow-hidden group cursor-pointer" onmousemove="handleCardTilt(event, this)" onmouseleave="resetCardTilt(this)" onclick="openRegistrationModal('Robotics & Automation')">
+          <div class="tilt-inner relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-12 h-12 rounded-2xl bg-cyber-cyan/10 border border-cyber-cyan/30 flex items-center justify-center text-cyber-cyan text-xl group-hover:bg-cyber-cyan group-hover:text-obsidian transition-colors">
+                  <i class="fa-solid fa-microchip"></i>
+                </span>
+                <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30">
+                  $15,000 POOL
+                </span>
+              </div>
+              <h3 class="font-syne font-bold text-xl text-white mb-2 group-hover:text-cyber-cyan transition-colors">RoboGenesis: Swarm Systems</h3>
+              <p class="text-xs font-space text-slate-300 leading-relaxed mb-6 font-light">
+                Build cooperative robotic algorithms, autonomous drone obstacle bypass, and physical embedded IoT networks.
+              </p>
+            </div>
+            
+            <div>
+              <div class="flex flex-wrap gap-1.5 mb-6">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">ROS2</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Computer Vision</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">C++ / Rust</span>
+              </div>
+              <button class="w-full py-2.5 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-space text-xs font-bold uppercase tracking-wider group-hover:bg-cyber-cyan group-hover:text-obsidian transition-all duration-300 flex items-center justify-center gap-2">
+                <span>Select Track</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-12 -bottom-12 w-36 h-36 bg-cyber-cyan/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyber-cyan/25 transition-all"></div>
+        </div>
+
+        <!-- Track 2: AI & Machine Intelligence -->
+        <div class="tilt-card glass-panel rounded-3xl p-6 border border-white/10 hover:border-cyber-purple/80 relative overflow-hidden group cursor-pointer" onmousemove="handleCardTilt(event, this)" onmouseleave="resetCardTilt(this)" onclick="openRegistrationModal('AI & Machine Intelligence')">
+          <div class="tilt-inner relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-12 h-12 rounded-2xl bg-cyber-purple/10 border border-cyber-purple/30 flex items-center justify-center text-cyber-purple text-xl group-hover:bg-cyber-purple group-hover:text-white transition-colors">
+                  <i class="fa-solid fa-brain"></i>
+                </span>
+                <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-cyber-purple/10 text-cyber-purple border border-cyber-purple/30">
+                  $15,000 POOL
+                </span>
+              </div>
+              <h3 class="font-syne font-bold text-xl text-white mb-2 group-hover:text-cyber-purple transition-colors">NeuralNexus: Agentic AI</h3>
+              <p class="text-xs font-space text-slate-300 leading-relaxed mb-6 font-light">
+                Construct autonomous multi-agent swarms, self-correcting neural pipelines, and real-time multimodal reasoning systems.
+              </p>
+            </div>
+            
+            <div>
+              <div class="flex flex-wrap gap-1.5 mb-6">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">PyTorch</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Agents</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Diffusion</span>
+              </div>
+              <button class="w-full py-2.5 rounded-xl bg-cyber-purple/10 border border-cyber-purple/30 text-cyber-purple font-space text-xs font-bold uppercase tracking-wider group-hover:bg-cyber-purple group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                <span>Select Track</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-12 -bottom-12 w-36 h-36 bg-cyber-purple/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyber-purple/25 transition-all"></div>
+        </div>
+
+        <!-- Track 3: Cybersecurity & Web3 -->
+        <div class="tilt-card glass-panel rounded-3xl p-6 border border-white/10 hover:border-cyber-magenta/80 relative overflow-hidden group cursor-pointer" onmousemove="handleCardTilt(event, this)" onmouseleave="resetCardTilt(this)" onclick="openRegistrationModal('Cybersecurity & Web3')">
+          <div class="tilt-inner relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-12 h-12 rounded-2xl bg-cyber-magenta/10 border border-cyber-magenta/30 flex items-center justify-center text-cyber-magenta text-xl group-hover:bg-cyber-magenta group-hover:text-white transition-colors">
+                  <i class="fa-solid fa-shield-virus"></i>
+                </span>
+                <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-cyber-magenta/10 text-cyber-magenta border border-cyber-magenta/30">
+                  $10,000 POOL
+                </span>
+              </div>
+              <h3 class="font-syne font-bold text-xl text-white mb-2 group-hover:text-cyber-magenta transition-colors">CipherMatrix: Sec & Web3</h3>
+              <p class="text-xs font-space text-slate-300 leading-relaxed mb-6 font-light">
+                Zero-knowledge cryptography, decentralized consensus algorithms, smart contract vulnerability exploit defenses.
+              </p>
+            </div>
+            
+            <div>
+              <div class="flex flex-wrap gap-1.5 mb-6">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Solidity</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">ZK-SNARK</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Pen-Testing</span>
+              </div>
+              <button class="w-full py-2.5 rounded-xl bg-cyber-magenta/10 border border-cyber-magenta/30 text-cyber-magenta font-space text-xs font-bold uppercase tracking-wider group-hover:bg-cyber-magenta group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                <span>Select Track</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-12 -bottom-12 w-36 h-36 bg-cyber-magenta/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyber-magenta/25 transition-all"></div>
+        </div>
+
+        <!-- Track 4: Creative Dev & Spatial Gaming -->
+        <div class="tilt-card glass-panel rounded-3xl p-6 border border-white/10 hover:border-cyber-yellow/80 relative overflow-hidden group cursor-pointer" onmousemove="handleCardTilt(event, this)" onmouseleave="resetCardTilt(this)" onclick="openRegistrationModal('Creative Dev & Spatial Gaming')">
+          <div class="tilt-inner relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-12 h-12 rounded-2xl bg-cyber-yellow/10 border border-cyber-yellow/30 flex items-center justify-center text-cyber-yellow text-xl group-hover:bg-cyber-yellow group-hover:text-obsidian transition-colors">
+                  <i class="fa-solid fa-gamepad"></i>
+                </span>
+                <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-cyber-yellow/10 text-cyber-yellow border border-cyber-yellow/30">
+                  $10,000 POOL
+                </span>
+              </div>
+              <h3 class="font-syne font-bold text-xl text-white mb-2 group-hover:text-cyber-yellow transition-colors">DimensionX: 3D & Gaming</h3>
+              <p class="text-xs font-space text-slate-300 leading-relaxed mb-6 font-light">
+                Build procedural 3D worlds, custom GLSL shaders, spatial WebXR environments, and generative interactive canvas art.
+              </p>
+            </div>
+            
+            <div>
+              <div class="flex flex-wrap gap-1.5 mb-6">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">Three.js</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">WebGPU</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">GLSL</span>
+              </div>
+              <button class="w-full py-2.5 rounded-xl bg-cyber-yellow/10 border border-cyber-yellow/30 text-cyber-yellow font-space text-xs font-bold uppercase tracking-wider group-hover:bg-cyber-yellow group-hover:text-obsidian transition-all duration-300 flex items-center justify-center gap-2">
+                <span>Select Track</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-12 -bottom-12 w-36 h-36 bg-cyber-yellow/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyber-yellow/25 transition-all"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SCHEDULE TIMELINE SECTION -->
+    <section id="schedule" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-center">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <div class="inline-flex items-center space-x-2 font-mono text-xs text-cyber-purple tracking-widest uppercase bg-cyber-purple/10 px-3 py-1 rounded-md border border-cyber-purple/30 mb-4">
+          <i class="fa-regular fa-calendar-days"></i> <span>Temporal Protocol</span>
+        </div>
+        <h2 class="font-syne text-3xl sm:text-5xl font-extrabold text-white mb-3">Festival Schedule</h2>
+        <p class="font-space text-slate-300 text-sm font-light">72 hours of uninterrupted building, tech keynotes, mentorship, and live arenas.</p>
+      </div>
+
+      <!-- Day Tabs Switcher -->
+      <div class="flex justify-center mb-10">
+        <div class="inline-flex p-1.5 rounded-2xl bg-obsidian-light/90 border border-white/10 glass-panel">
+          <button onclick="switchScheduleDay(1)" id="day-tab-1" class="px-5 py-2.5 rounded-xl font-space text-xs sm:text-sm font-bold uppercase tracking-wider transition-all bg-cyber-cyan text-obsidian shadow-neon-cyan">
+            Day 01 // Genesis & Hack
+          </button>
+          <button onclick="switchScheduleDay(2)" id="day-tab-2" class="px-5 py-2.5 rounded-xl font-space text-xs sm:text-sm font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-white">
+            Day 02 // Swarm Arena
+          </button>
+          <button onclick="switchScheduleDay(3)" id="day-tab-3" class="px-5 py-2.5 rounded-xl font-space text-xs sm:text-sm font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-white">
+            Day 03 // Grand Gala & Awards
+          </button>
+        </div>
+      </div>
+
+      <!-- Schedule Content (Dynamic Container) -->
+      <div id="schedule-container" class="space-y-4">
+        <!-- Populated dynamically via JavaScript -->
+      </div>
+
+    </section>
+
+
+    <!-- PRIZE POOL & LIVE STATS SECTION -->
+    <section id="prizes" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center">
+      
+      <!-- Stats Banner -->
+      <div class="glass-panel rounded-3xl p-8 sm:p-12 border border-white/10 relative overflow-hidden mb-16">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center relative z-10">
+          <div>
+            <div class="font-syne font-black text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-blue stat-counter" data-target="50000">$0</div>
+            <div class="font-space text-xs sm:text-sm text-slate-300 mt-2 font-medium tracking-wide">Total Prize Pool ($)</div>
+          </div>
+          <div>
+            <div class="font-syne font-black text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyber-purple to-cyber-magenta stat-counter" data-target="5000">0</div>
+            <div class="font-space text-xs sm:text-sm text-slate-300 mt-2 font-medium tracking-wide">Global Hackers</div>
+          </div>
+          <div>
+            <div class="font-syne font-black text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyber-yellow to-amber-500 stat-counter" data-target="40">0</div>
+            <div class="font-space text-xs sm:text-sm text-slate-300 mt-2 font-medium tracking-wide">Collegiate Chapters</div>
+          </div>
+          <div>
+            <div class="font-syne font-black text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyber-green to-emerald-400 stat-counter" data-target="72">0</div>
+            <div class="font-space text-xs sm:text-sm text-slate-300 mt-2 font-medium tracking-wide">Hours Non-Stop Hack</div>
+          </div>
+        </div>
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-cyber-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-cyber-purple/10 rounded-full blur-3xl pointer-events-none"></div>
+      </div>
+
+      <!-- Prize Breakdown Podium Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-5xl mx-auto w-full">
+        
+        <!-- 2nd Place -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/10 hover:border-slate-300 text-center order-2 md:order-1 hover:-translate-y-2 transition-transform duration-300">
+          <div class="w-14 h-14 mx-auto rounded-full bg-slate-500/20 text-slate-300 flex items-center justify-center text-2xl font-bold font-syne mb-4 border border-slate-400/30">
+            2
+          </div>
+          <h3 class="font-syne font-bold text-xl text-white mb-1">Runner Up</h3>
+          <div class="font-syne text-3xl font-extrabold text-slate-200 mb-3">$12,000</div>
+          <p class="text-xs font-space text-slate-400 leading-relaxed mb-4">
+            Cloud infrastructure credits ($25k), VC investor pitch slots & hardware kits.
+          </p>
+          <span class="inline-block px-3 py-1 rounded-full bg-white/5 text-[11px] font-mono text-slate-300">Silver Node Award</span>
+        </div>
+
+        <!-- 1st Place (Grand Champion) -->
+        <div class="glass-panel p-8 rounded-3xl border-2 border-cyber-cyan shadow-neon-cyan text-center order-1 md:order-2 hover:-translate-y-3 transition-transform duration-300 relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-purple text-[10px] font-mono font-bold uppercase tracking-widest text-obsidian">
+            Grand Champion
+          </div>
+          <div class="w-18 h-18 mx-auto rounded-full bg-cyber-cyan/20 text-cyber-cyan flex items-center justify-center text-3xl font-bold font-syne mb-4 border border-cyber-cyan/40 p-3">
+            <i class="fa-solid fa-trophy text-cyber-yellow animate-bounce"></i>
+          </div>
+          <h3 class="font-syne font-extrabold text-2xl text-white mb-1">Cyber Apex Award</h3>
+          <div class="font-syne text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta mb-3">$25,000</div>
+          <p class="text-xs font-space text-slate-300 leading-relaxed mb-6">
+            Direct Seed Round Fast-Track ($100k valuation cap), Silicon Valley Trip, and Titanium Championship Trophy.
+          </p>
+          <button onclick="openRegistrationModal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-purple text-obsidian font-space font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity">
+            Compete for 1st Place
+          </button>
+        </div>
+
+        <!-- 3rd Place -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/10 hover:border-amber-600 text-center order-3 md:order-3 hover:-translate-y-2 transition-transform duration-300">
+          <div class="w-14 h-14 mx-auto rounded-full bg-amber-700/20 text-amber-500 flex items-center justify-center text-2xl font-bold font-syne mb-4 border border-amber-600/30">
+            3
+          </div>
+          <h3 class="font-syne font-bold text-xl text-white mb-1">Bronze Apex</h3>
+          <div class="font-syne text-3xl font-extrabold text-amber-400 mb-3">$8,000</div>
+          <p class="text-xs font-space text-slate-400 leading-relaxed mb-4">
+            AI accelerator credits, mechanical keyboards & developer tool licenses.
+          </p>
+          <span class="inline-block px-3 py-1 rounded-full bg-white/5 text-[11px] font-mono text-slate-300">Bronze Node Award</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TASK SUBMISSION & SCREENSHOT RECREATION SECTION -->
+    <section id="submission" class="min-h-screen py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto flex flex-col justify-center">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <div class="inline-flex items-center space-x-2 font-mono text-xs text-amber-400 tracking-widest uppercase bg-amber-400/10 px-3 py-1 rounded-md border border-amber-400/30 mb-4">
+          <span>🪙</span> <span>Interactive Challenge Protocol</span>
+        </div>
+        <h2 class="font-syne text-3xl sm:text-5xl font-extrabold text-white mb-3">Build in 3D Portal</h2>
+        <p class="font-space text-slate-300 text-sm font-light">Submit your 3D interactive web project to earn your badge and claim 100 verification coins.</p>
+      </div>
+
+      <!-- Card container matching the clean popout design from user screenshot -->
+      <div class="bg-white text-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg mx-auto w-full relative">
+        
+        <!-- Top bar with Badge & Coins -->
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+          <h3 class="font-space font-extrabold text-2xl text-slate-900">Build in 3D</h3>
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-1 px-3 py-1 bg-amber-100/80 rounded-full font-bold text-sm text-amber-800">
+              <span>100</span> <span>🪙</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description Paragraph -->
+        <p class="text-slate-600 text-sm leading-relaxed mb-6 font-normal">
+          Design and develop a 3D interactive website for Techfest. Think 3D scroll animations, interactive objects and dynamic transitions. You have full creative freedom on the concept and visuals. <span class="text-slate-700 font-medium">*Submit either a screen recording of the working website (Drive link with viewer access) or the GitHub link to your project.</span>
+        </p>
+
+        <!-- Form -->
+        <form id="submission-inline-form" onsubmit="handleTaskSubmit(event)" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-slate-900 mb-1.5">
+              Submission URL <span class="text-rose-500">*</span>
+            </label>
+            <input 
+              type="url" 
+              id="submission-url-input" 
+              required 
+              placeholder="https://drive.google.com/..." 
+              class="w-full px-4 py-3 rounded-xl border border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none text-slate-800 text-sm font-space placeholder-slate-400"
+            />
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button 
+              type="button" 
+              onclick="document.getElementById('submission-url-input').value=''"
+              class="w-1/2 py-3.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-space font-semibold text-sm hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            
+            <button 
+              type="submit" 
+              id="submit-task-btn"
+              class="w-1/2 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-space font-semibold text-sm shadow-md shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Submit Task
+            </button>
+          </div>
+        </form>
+
+        <!-- Success notification box -->
+        <div id="submission-success-msg" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-space flex items-center space-x-2">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+          <span><strong>Task Submitted!</strong> 100 🪙 awarded to your hacker pass. Status: Under Review.</span>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 bg-obsidian-light border-t border-white/10 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-white/5">
+        
+        <!-- Col 1: Brand Info -->
+        <div class="md:col-span-4 space-y-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-cyber-cyan/20 border border-cyber-cyan/40 flex items-center justify-center text-cyber-cyan">
+              <i class="fa-solid fa-cube"></i>
+            </div>
+            <span class="font-syne font-extrabold text-xl text-white">TECHFEST '26</span>
+          </div>
+          <p class="text-xs font-space text-slate-400 leading-relaxed">
+            The flagship international tech festival shaping the intersection of physical robotics, synthetic intelligences, and spatial human experience.
+          </p>
+          <div class="flex items-center space-x-4 pt-2">
+            <a href="https://github.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-cyber-cyan/20 text-slate-300 hover:text-cyber-cyan flex items-center justify-center transition-colors border border-white/10">
+              <i class="fa-brands fa-github text-sm"></i>
+            </a>
+            <a href="https://twitter.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-cyber-purple/20 text-slate-300 hover:text-cyber-purple flex items-center justify-center transition-colors border border-white/10">
+              <i class="fa-brands fa-x-twitter text-sm"></i>
+            </a>
+            <a href="https://discord.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-cyber-blue/20 text-slate-300 hover:text-cyber-blue flex items-center justify-center transition-colors border border-white/10">
+              <i class="fa-brands fa-discord text-sm"></i>
+            </a>
+            <a href="https://linkedin.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-cyber-magenta/20 text-slate-300 hover:text-cyber-magenta flex items-center justify-center transition-colors border border-white/10">
+              <i class="fa-brands fa-linkedin-in text-sm"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Col 2: Navigation -->
+        <div class="md:col-span-3 space-y-3 font-space text-xs">
+          <h4 class="font-syne font-bold text-white uppercase tracking-wider text-sm mb-2">Navigation</h4>
+          <div><a href="#about" class="text-slate-400 hover:text-cyber-cyan transition-colors">About the Festival</a></div>
+          <div><a href="#tracks" class="text-slate-400 hover:text-cyber-cyan transition-colors">Competition Tracks</a></div>
+          <div><a href="#schedule" class="text-slate-400 hover:text-cyber-cyan transition-colors">Timeline & Keynotes</a></div>
+          <div><a href="#prizes" class="text-slate-400 hover:text-cyber-cyan transition-colors">Prizes & Bounties</a></div>
+          <div><a href="#submission" class="text-slate-400 hover:text-cyber-cyan transition-colors">Task Portal (100 pts)</a></div>
+        </div>
+
+        <!-- Col 3: Terminal Status Box -->
+        <div class="md:col-span-5 glass-panel p-4 rounded-2xl border border-white/10 font-mono text-[11px] space-y-2">
+          <div class="flex items-center justify-between text-slate-400 border-b border-white/5 pb-1.5">
+            <span class="text-cyber-cyan flex items-center gap-1.5"><i class="fa-solid fa-terminal"></i> TELEMETRY LOG</span>
+            <span class="text-cyber-green text-[10px]">ALL SYSTEMS GREEN</span>
+          </div>
+          <div class="text-slate-400 space-y-1">
+            <p>> NODE_ID: TF26-US-EAST-01</p>
+            <p>> THREE_ENGINE: WEBGL_R128_ACTIVE</p>
+            <p>> GSAP_CHOREOGRAPHY: SYNCED_TO_VIEWPORT</p>
+            <p class="text-cyber-purple">> HACKERS_REGISTERED: 5,412 / 6,000</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copyright Bar -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-slate-500 gap-4">
+        <div>
+          &copy; 2026 TECHFEST Core Team. All rights reserved. Designed for the Cyber-Physical Era.
+        </div>
+        <div class="flex items-center space-x-6">
+          <a href="#" class="hover:text-slate-300">Code of Conduct</a>
+          <a href="#" class="hover:text-slate-300">Privacy Policy</a>
+          <a href="#hero" class="text-cyber-cyan hover:underline flex items-center gap-1">
+            <span>Back to Top</span> <i class="fa-solid fa-arrow-up text-[10px]"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- TASK SUBMISSION POPUP MODAL (Exact match for prompt screenshot) -->
+  <div id="task-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full transform scale-95 transition-transform duration-300 relative" id="task-modal-box">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+        <h3 class="font-space font-extrabold text-2xl text-slate-900">Build in 3D</h3>
+        <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-1 px-3 py-1 bg-amber-100/90 rounded-full font-bold text-sm text-amber-800">
+            <span>100</span> <span>🪙</span>
+          </div>
+          <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <p class="text-slate-600 text-sm leading-relaxed mb-6 font-normal">
+        Design and develop a 3D interactive website for Techfest. Think 3D scroll animations, interactive objects and dynamic transitions. You have full creative freedom on the concept and visuals. <span class="text-slate-700 font-medium">*Submit either a screen recording of the working website (Drive link with viewer access) or the GitHub link to your project.</span>
+      </p>
+
+      <!-- Form -->
+      <form onsubmit="handleTaskSubmit(event, true)" class="space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-slate-900 mb-1.5">
+            Submission URL <span class="text-rose-500">*</span>
+          </label>
+          <input 
+            type="url" 
+            id="modal-submission-url-input" 
+            required 
+            placeholder="https://drive.google.com/..." 
+            class="w-full px-4 py-3 rounded-xl border border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none text-slate-800 text-sm font-space placeholder-slate-400"
+          />
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button 
+            type="button" 
+            onclick="closeTaskModal()" 
+            class="w-1/2 py-3.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-space font-semibold text-sm hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="submit" 
+            class="w-1/2 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-space font-semibold text-sm shadow-md shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Submit Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- FULL REGISTRATION MODAL -->
+  <div id="registration-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-panel text-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-xl w-full border border-cyber-cyan/30 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto" id="registration-modal-box">
+      
+      <!-- Close Button -->
+      <button onclick="closeRegistrationModal()" class="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="mb-6">
+        <div class="inline-flex items-center space-x-2 font-mono text-[11px] text-cyber-cyan uppercase tracking-widest bg-cyber-cyan/10 px-3 py-1 rounded-md border border-cyber-cyan/30 mb-2">
+          <span>TECHFEST 2026 HACKER PASS</span>
+        </div>
+        <h3 class="font-syne font-extrabold text-2xl text-white">Join the Cyber-Physical Era</h3>
+        <p class="text-xs font-space text-slate-400 mt-1">Free registration. Access all keynotes, hackathon tracks, and mentorship channels.</p>
+      </div>
+
+      <form id="registration-form" onsubmit="handleRegistrationSubmit(event)" class="space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">FULL NAME *</label>
+            <input type="text" required placeholder="e.g. Alex Mercer" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">COLLEGE / UNIVERSITY *</label>
+            <input type="text" required placeholder="e.g. Stanford University" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">EMAIL ADDRESS *</label>
+            <input type="email" required placeholder="alex@domain.edu" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">PREFERRED TRACK *</label>
+            <select id="reg-track-select" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space">
+              <option value="Robotics & Automation">RoboGenesis: Swarm Systems</option>
+              <option value="AI & Machine Intelligence">NeuralNexus: Agentic AI</option>
+              <option value="Cybersecurity & Web3">CipherMatrix: Sec & Web3</option>
+              <option value="Creative Dev & Spatial Gaming">DimensionX: 3D & Gaming</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono text-slate-300 mb-1">TEAM NAME (OR TYPE 'SOLO') *</label>
+          <input type="text" required placeholder="e.g. CyberVanguard" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono text-slate-300 mb-1">GITHUB OR PORTFOLIO URL</label>
+          <input type="url" placeholder="https://github.com/..." class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian/80 border border-white/10 focus:border-cyber-cyan focus:outline-none text-white text-sm font-space" />
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta text-obsidian font-space font-bold text-sm uppercase tracking-wider hover:opacity-90 transition-opacity shadow-neon-cyan flex items-center justify-center gap-2">
+            <i class="fa-solid fa-sparkles"></i> <span>Complete Registration & Generate Pass</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Pass Card Result after submission -->
+      <div id="pass-result" class="hidden text-center py-6 space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-full bg-cyber-green/20 text-cyber-green flex items-center justify-center text-3xl border border-cyber-green/40">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h4 class="font-syne font-bold text-2xl text-white">Access Granted!</h4>
+        <p class="text-xs font-space text-slate-300">Your digital hacker pass has been generated. Check your email for authentication credentials & Discord invite.</p>
+        <div class="p-4 rounded-xl bg-obsidian/90 border border-cyber-cyan/40 font-mono text-xs text-cyber-cyan text-left">
+          <p>PASS_ID: TF26-HCK-9821</p>
+          <p>STATUS: VERIFIED // BADGE: GENERAL_HACKER</p>
+          <p>DISCORD_CHANNEL: #genesis-lounge</p>
+        </div>
+        <button onclick="closeRegistrationModal()" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-space text-xs font-semibold">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- External Modular JavaScript Logic -->
+  <script src="js/main.js"></script>
+
+</body>
+</html>

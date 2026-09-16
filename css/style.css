@@ -1,0 +1,109 @@
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #05070f;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00f0ff, #b026ff);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff007f;
+}
+
+/* Cyber scanlines overlay */
+.scanlines {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Grid background */
+.cyber-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Gradient Text Utilities */
+.text-glow-cyan {
+  text-shadow: 0 0 15px rgba(0, 240, 255, 0.6), 0 0 30px rgba(0, 240, 255, 0.2);
+}
+.text-glow-purple {
+  text-shadow: 0 0 15px rgba(176, 38, 255, 0.6), 0 0 30px rgba(176, 38, 255, 0.2);
+}
+
+/* 3D Card Tilt styles */
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+  will-change: transform;
+}
+.tilt-inner {
+  transform: translateZ(35px);
+}
+
+/* Glass panel */
+.glass-panel {
+  background: rgba(10, 15, 30, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+}
+.glass-panel:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+  display: inline-block;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip: rect(0, 0, 0, 0);
+}
+.glitch-text:hover::before {
+  left: -2px;
+  text-shadow: 2px 0 #ff007f;
+  animation: glitch-anim-1 2s infinite linear alternate-reverse;
+}
+.glitch-text:hover::after {
+  left: 2px;
+  text-shadow: -2px 0 #00f0ff;
+  animation: glitch-anim-2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(20px, 9999px, 40px, 0); }
+  20% { clip: rect(60px, 9999px, 80px, 0); }
+  40% { clip: rect(10px, 9999px, 30px, 0); }
+  60% { clip: rect(75px, 9999px, 95px, 0); }
+  80% { clip: rect(45px, 9999px, 65px, 0); }
+  100% { clip: rect(15px, 9999px, 35px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(50px, 9999px, 70px, 0); }
+  20% { clip: rect(15px, 9999px, 35px, 0); }
+  40% { clip: rect(80px, 9999px, 100px, 0); }
+  60% { clip: rect(30px, 9999px, 50px, 0); }
+  80% { clip: rect(90px, 9999px, 110px, 0); }
+  100% { clip: rect(5px, 9999px, 25px, 0); }
+}
+
+/* Cyber border gradient animation */
+.cyber-border-gradient {
+  background: linear-gradient(60deg, #00f0ff, #b026ff, #ff007f, #00f0ff);
+  background-size: 300% 300%;
+  animation: borderFlow 5s ease infinite;
+}
